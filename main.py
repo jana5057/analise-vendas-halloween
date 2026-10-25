@@ -23,6 +23,14 @@ def mostrar_primeiros(registros, quantidade=3):  # ✏️ padrão: mostra 3
             # {valor!r} mostra entre aspas, para enxergar espaços escondidos
             print(f"{coluna}: {valor!r}")
 
+def valores_distintos(registros, coluna):
+    # set = conjunto: guarda cada valor uma vez só, sem repetir
+    encontrados = set()
+    for registro in registros:
+        # registro[coluna] pega o valor daquela coluna neste pedido
+        encontrados.add(registro[coluna])
+    # sorted coloca em ordem alfabética para facilitar a leitura
+    return sorted(encontrados)
 
 # ============ EXECUÇÃO ============
 # 📄 lê o arquivo e guarda os 1500 pedidos na lista "registros"
@@ -31,3 +39,5 @@ registros = carregar_dados("halloween_vendas.csv")
 print("Total de registros:", len(registros))
 # mostra os 3 primeiros pedidos
 mostrar_primeiros(registros)
+# vê todas as escritas diferentes da coluna categoria (antes da limpeza)
+print("Categorias distintas:", valores_distintos(registros, "categoria"))
