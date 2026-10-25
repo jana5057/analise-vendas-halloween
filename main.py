@@ -64,6 +64,43 @@ def padronizar_categorias(registros):
     # devolve os dois números
     return vazias_preenchidas, nao_vazias_alteradas
 
+# tabelinha: texto limpo -> nome oficial do canal
+CANAIS_OFICIAIS = {
+    "mercado": "Mercado",
+    "web": "Web",
+    "loja física": "Loja física",
+    "loja fisica": "Loja física",  # caso venha sem acento
+}
+
+
+def padronizar_canal(texto):
+    # tira espaços das pontas, deixa minúsculo e junta espaços repetidos
+    chave = re.sub(r"\s+", " ", texto.strip().lower())
+    # se está na tabelinha: (reconheceu = True, nome oficial)
+    if chave in CANAIS_OFICIAIS:
+        return True, CANAIS_OFICIAIS[chave]
+    # se não está: (reconheceu = False, texto como veio)
+    return False, texto
+
+def padronizar_canais(registros):
+    corrigidos = 0
+    nao_reconhecidos = 0
+    for registro in registros:
+        original = registro["canal_venda"]
+        reconheceu, oficial = padronizar_canal(original)
+        # guarda o texto original de qualquer jeito
+        registro["canal_original"] = original
+        if reconheceu:
+            # conta só se o nome realmente mudou
+            if oficial != original:
+                corrigidos += 1
+            registro["canal_venda"] = oficial
+        else:
+            # não reconheceu: conta e deixa como veio
+            nao_reconhecidos += 1
+    # devolve os dois números
+    return corrigidos, nao_reconhecidos
+
 # ============ EXECUÇÃO ============
 # 📄 lê o arquivo e guarda os 1500 pedidos na lista "registros"
 registros = carregar_dados("halloween_vendas.csv")
@@ -79,3 +116,11 @@ print("Categorias vazias preenchidas:", vazias_preenchidas)
 print("Categorias não vazias alteradas:", nao_vazias_alteradas)
 # mostra como ficou depois da limpeza
 print("Categorias depois:", valores_distintos(registros, "categoria"))
+# vê as escritas diferentes de canal_venda (antes da limpeza)
+print("Canais antes:", valores_distintos(registros, "canal_venda"))
+# padroniza a coluna canal_venda nos 1500 pedidos
+canais_corrigidos, canais_nao_reconhecidos = padronizar_canais(registros)
+print("Canais corrigidos:", canais_corrigidos)
+print("Canais não reconhecidos:", canais_nao_reconhecidos)
+# mostra como ficou depois da limpeza
+print("Canais depois:", valores_distintos(registros, "canal_venda"))
