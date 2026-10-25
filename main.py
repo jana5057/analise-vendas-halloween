@@ -46,6 +46,24 @@ def limpar_categoria(texto):
         limpo = "sem categoria"
     return limpo
 
+
+def padronizar_categorias(registros):
+    vazias_preenchidas = 0
+    nao_vazias_alteradas = 0
+    for registro in registros:
+        original = registro["categoria"]
+        novo = limpar_categoria(original)
+        # conta cada caso separadamente
+        if original.strip() == "":
+            vazias_preenchidas += 1
+        elif novo != original:
+            nao_vazias_alteradas += 1
+        # guarda o texto original e troca pela versão limpa
+        registro["categoria_original"] = original
+        registro["categoria"] = novo
+    # devolve os dois números
+    return vazias_preenchidas, nao_vazias_alteradas
+
 # ============ EXECUÇÃO ============
 # 📄 lê o arquivo e guarda os 1500 pedidos na lista "registros"
 registros = carregar_dados("halloween_vendas.csv")
@@ -55,6 +73,9 @@ print("Total de registros:", len(registros))
 mostrar_primeiros(registros)
 # vê todas as escritas diferentes da coluna categoria (antes da limpeza)
 print("Categorias distintas:", valores_distintos(registros, "categoria"))
-# teste da limpeza: espero 'acessorio' e 'sem categoria'
-print(limpar_categoria(" ACESSORIO!!! "))
-print(limpar_categoria(""))
+# padroniza a coluna categoria nos 1500 pedidos
+vazias_preenchidas, nao_vazias_alteradas = padronizar_categorias(registros)
+print("Categorias vazias preenchidas:", vazias_preenchidas)
+print("Categorias não vazias alteradas:", nao_vazias_alteradas)
+# mostra como ficou depois da limpeza
+print("Categorias depois:", valores_distintos(registros, "categoria"))
