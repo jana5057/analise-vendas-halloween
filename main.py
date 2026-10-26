@@ -2,6 +2,7 @@
 import csv  # 🔒 biblioteca do Python para ler arquivos .csv
 import re #  🔒 biblioteca do Python para expressões regulares (regex)
 from datetime import datetime  # 🔒 biblioteca do Python para lidar com datas e horas
+import pandas as pd     
 
 
 # ============ FUNÇÕES ============
@@ -232,6 +233,15 @@ def contar_por_campo(registros, campo):
         # faz o tracinho
         contagem[valor] += 1
     return contagem
+
+def ler_com_pandas(caminho):
+    # pd.read_csv lê o arquivo como tabela (DataFrame)
+    tabela = pd.read_csv(caminho)
+    # shape = (número de linhas, número de colunas)
+    print("Pandas, tamanho da tabela:", tabela.shape)
+    # isna() marca os vazios e sum() conta quantos são
+    print("Pandas, categorias vazias:", tabela["categoria"].isna().sum())
+
 # valida quantidade e preço (só marca os problemas, não altera os valores)
 problemas_quantidade, problemas_preco, pedidos_afetados = validar_numeros(registros)
 print("Problemas em quantidade:", problemas_quantidade)
@@ -259,3 +269,5 @@ print("Pedidos por ano-mês:")
 for mes, total in sorted(por_mes.items()):
     print(" ", mes, ":", total)
 print("Pedidos fora da contagem por mês (data inválida):", datas_invalidas)
+# confere a leitura com o Pandas: espero (1500, 14) e 18 vazias
+ler_com_pandas("halloween_vendas.csv")
