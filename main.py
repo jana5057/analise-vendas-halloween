@@ -1,13 +1,13 @@
 # ============ IMPORTS ============
 import csv  # 🔒 biblioteca do Python para ler arquivos .csv
-import re #  🔒 biblioteca do Python para expressões regulares (regex)
-from datetime import datetime  # 🔒 biblioteca do Python para lidar com datas e horas
-import pandas as pd     
+import re  # 🔒 biblioteca do Python para expressões regulares (regex)
+from datetime import datetime  # 🔒 biblioteca do Python para lidar com datas
+import pandas as pd  # 🔒 biblioteca para ler o CSV como tabela
 
 
 # ============ FUNÇÕES ============
 
-# CÓDIGO DO SPRINT 1 (Leitura do arquivo)
+# ---------- SPRINT 1: leitura do arquivo ----------
 def carregar_dados(caminho):  # ✏️ "caminho" = nome do arquivo que vamos abrir
     # 🔒 open abre o arquivo; "with" fecha sozinho no final
     with open(caminho, mode="r", encoding="utf-8", newline="") as arquivo:
@@ -26,6 +26,8 @@ def mostrar_primeiros(registros, quantidade=3):  # ✏️ padrão: mostra 3
             # {valor!r} mostra entre aspas, para enxergar espaços escondidos
             print(f"{coluna}: {valor!r}")
 
+
+# ---------- SPRINT 2: limpeza de textos ----------
 def valores_distintos(registros, coluna):
     # set = conjunto: guarda cada valor uma vez só, sem repetir
     encontrados = set()
@@ -66,6 +68,7 @@ def padronizar_categorias(registros):
     # devolve os dois números
     return vazias_preenchidas, nao_vazias_alteradas
 
+
 # tabelinha: texto limpo -> nome oficial do canal
 CANAIS_OFICIAIS = {
     "mercado": "Mercado",
@@ -83,6 +86,7 @@ def padronizar_canal(texto):
         return True, CANAIS_OFICIAIS[chave]
     # se não está: (reconheceu = False, texto como veio)
     return False, texto
+
 
 def padronizar_canais(registros):
     corrigidos = 0
@@ -103,6 +107,8 @@ def padronizar_canais(registros):
     # devolve os dois números
     return corrigidos, nao_reconhecidos
 
+
+# ---------- SPRINT 3: validação de quantidade e preço ----------
 def validar_quantidade(texto):
     # tenta transformar em número inteiro
     try:
@@ -128,29 +134,6 @@ def validar_preco(texto):
         return False, "preço negativo"
     return True, valor
 
-# ============ EXECUÇÃO ============
-# 📄 lê o arquivo e guarda os 1500 pedidos na lista "registros"
-registros = carregar_dados("halloween_vendas.csv")
-# confere se leu tudo: deve aparecer 1500
-print("Total de registros:", len(registros))
-# mostra os 3 primeiros pedidos
-mostrar_primeiros(registros)
-# vê todas as escritas diferentes da coluna categoria (antes da limpeza)
-print("Categorias distintas:", valores_distintos(registros, "categoria"))
-# padroniza a coluna categoria nos 1500 pedidos
-vazias_preenchidas, nao_vazias_alteradas = padronizar_categorias(registros)
-print("Categorias vazias preenchidas:", vazias_preenchidas)
-print("Categorias não vazias alteradas:", nao_vazias_alteradas)
-# mostra como ficou depois da limpeza
-print("Categorias depois:", valores_distintos(registros, "categoria"))
-# vê as escritas diferentes de canal_venda (antes da limpeza)
-print("Canais antes:", valores_distintos(registros, "canal_venda"))
-# padroniza a coluna canal_venda nos 1500 pedidos
-canais_corrigidos, canais_nao_reconhecidos = padronizar_canais(registros)
-print("Canais corrigidos:", canais_corrigidos)
-print("Canais não reconhecidos:", canais_nao_reconhecidos)
-# mostra como ficou depois da limpeza
-print("Canais depois:", valores_distintos(registros, "canal_venda"))
 
 def validar_numeros(registros):
     problemas_quantidade = 0
@@ -175,6 +158,7 @@ def validar_numeros(registros):
     return problemas_quantidade, problemas_preco, pedidos_afetados
 
 
+# ---------- SPRINT 4: datas, regra da entrega e relatório ----------
 def converter_data(texto):
     # tenta ler o texto seguindo o molde ano-mês-dia hora:minuto:segundo
     try:
@@ -184,6 +168,7 @@ def converter_data(texto):
         return False, None
     # strftime escreve a data em outro formato: aqui "2025-09"
     return True, data.strftime("%Y-%m")
+
 
 def processar_datas(registros):
     vazias = 0
@@ -203,6 +188,7 @@ def processar_datas(registros):
                 invalidas += 1
     return vazias, invalidas
 
+
 def investigar_entrega(registros):
     sem_entrega_cancelado = 0
     sem_entrega_outro = 0
@@ -219,6 +205,7 @@ def investigar_entrega(registros):
                     exemplos.append(registro)
     return sem_entrega_cancelado, sem_entrega_outro, exemplos
 
+
 def contar_por_campo(registros, campo):
     # a "folha de tracinhos": começa vazia
     contagem = {}
@@ -234,6 +221,8 @@ def contar_por_campo(registros, campo):
         contagem[valor] += 1
     return contagem
 
+
+# ---------- SPRINT 5: leitura com Pandas ----------
 def ler_com_pandas(caminho):
     # pd.read_csv lê o arquivo como tabela (DataFrame)
     tabela = pd.read_csv(caminho)
@@ -242,22 +231,53 @@ def ler_com_pandas(caminho):
     # isna() marca os vazios e sum() conta quantos são
     print("Pandas, categorias vazias:", tabela["categoria"].isna().sum())
 
+
+# ============ EXECUÇÃO ============
+# 📄 lê o arquivo e guarda os 1500 pedidos na lista "registros"
+registros = carregar_dados("halloween_vendas.csv")
+# confere se leu tudo: deve aparecer 1500
+print("Total de registros:", len(registros))
+# mostra os 3 primeiros pedidos
+mostrar_primeiros(registros)
+
+# vê todas as escritas diferentes de categoria (antes da limpeza)
+print("Categorias distintas:", valores_distintos(registros, "categoria"))
+
+# padroniza a coluna categoria nos 1500 pedidos
+vazias_preenchidas, nao_vazias_alteradas = padronizar_categorias(registros)
+print("Categorias vazias preenchidas:", vazias_preenchidas)
+print("Categorias não vazias alteradas:", nao_vazias_alteradas)
+# mostra como ficou depois da limpeza
+print("Categorias depois:", valores_distintos(registros, "categoria"))
+
+# vê as escritas diferentes de canal_venda (antes da limpeza)
+print("Canais antes:", valores_distintos(registros, "canal_venda"))
+# padroniza a coluna canal_venda nos 1500 pedidos
+canais_corrigidos, canais_nao_reconhecidos = padronizar_canais(registros)
+print("Canais corrigidos:", canais_corrigidos)
+print("Canais não reconhecidos:", canais_nao_reconhecidos)
+# mostra como ficou depois da limpeza
+print("Canais depois:", valores_distintos(registros, "canal_venda"))
+
 # valida quantidade e preço (só marca os problemas, não altera os valores)
 problemas_quantidade, problemas_preco, pedidos_afetados = validar_numeros(registros)
 print("Problemas em quantidade:", problemas_quantidade)
 print("Problemas em preço:", problemas_preco)
 print("Pedidos afetados:", pedidos_afetados)
+
 # converte data_venda e conta datas vazias e inválidas
 datas_vazias, datas_invalidas = processar_datas(registros)
 print("Datas vazias:", datas_vazias)
 print("Datas inválidas:", datas_invalidas)
+
 # investiga a regra: sem data_entrega => Cancelado?
 sem_entrega_cancelado, sem_entrega_outro, exemplos = investigar_entrega(registros)
 print("Sem entrega e Cancelado:", sem_entrega_cancelado)
 print("Sem entrega e outro status:", sem_entrega_outro)
 for exemplo in exemplos:
     print("Contraexemplo:", exemplo["pedido_id"], exemplo["status_pedido"])
-    # relatório: quantos pedidos por canal
+
+# relatório: quantos pedidos por canal
 por_canal = contar_por_campo(registros, "canal_venda")
 print("Pedidos por canal:")
 for canal, total in sorted(por_canal.items()):
@@ -269,5 +289,6 @@ print("Pedidos por ano-mês:")
 for mes, total in sorted(por_mes.items()):
     print(" ", mes, ":", total)
 print("Pedidos fora da contagem por mês (data inválida):", datas_invalidas)
+
 # confere a leitura com o Pandas: espero (1500, 14) e 18 vazias
 ler_com_pandas("halloween_vendas.csv")
