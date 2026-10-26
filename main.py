@@ -218,6 +218,20 @@ def investigar_entrega(registros):
                     exemplos.append(registro)
     return sem_entrega_cancelado, sem_entrega_outro, exemplos
 
+def contar_por_campo(registros, campo):
+    # a "folha de tracinhos": começa vazia
+    contagem = {}
+    for registro in registros:
+        valor = registro[campo]
+        # pedidos sem valor neste campo (ex.: data inválida) ficam de fora
+        if valor is None:
+            continue
+        # se ainda não existe na folha, começa em 0
+        if valor not in contagem:
+            contagem[valor] = 0
+        # faz o tracinho
+        contagem[valor] += 1
+    return contagem
 # valida quantidade e preço (só marca os problemas, não altera os valores)
 problemas_quantidade, problemas_preco, pedidos_afetados = validar_numeros(registros)
 print("Problemas em quantidade:", problemas_quantidade)
@@ -233,3 +247,15 @@ print("Sem entrega e Cancelado:", sem_entrega_cancelado)
 print("Sem entrega e outro status:", sem_entrega_outro)
 for exemplo in exemplos:
     print("Contraexemplo:", exemplo["pedido_id"], exemplo["status_pedido"])
+    # relatório: quantos pedidos por canal
+por_canal = contar_por_campo(registros, "canal_venda")
+print("Pedidos por canal:")
+for canal, total in sorted(por_canal.items()):
+    print(" ", canal, ":", total)
+
+# relatório: quantos pedidos por ano-mês (ordem cronológica)
+por_mes = contar_por_campo(registros, "ano_mes")
+print("Pedidos por ano-mês:")
+for mes, total in sorted(por_mes.items()):
+    print(" ", mes, ":", total)
+print("Pedidos fora da contagem por mês (data inválida):", datas_invalidas)
