@@ -101,6 +101,31 @@ def padronizar_canais(registros):
     # devolve os dois números
     return corrigidos, nao_reconhecidos
 
+def validar_quantidade(texto):
+    # tenta transformar em número inteiro
+    try:
+        valor = int(texto.strip())
+    except ValueError:
+        # vazio ou texto: não converte, então é problema
+        return False, "não é um número inteiro"
+    # regra de negócio: precisa ser maior que zero
+    if valor <= 0:
+        return False, "quantidade menor ou igual a zero"
+    return True, valor
+
+
+def validar_preco(texto):
+    # tenta transformar em número decimal (116.6)
+    try:
+        valor = float(texto.strip())
+    except ValueError:
+        # vazio ou texto: não converte, então é problema
+        return False, "não é um número"
+    # regra de negócio: preço não pode ser negativo
+    if valor < 0:
+        return False, "preço negativo"
+    return True, valor
+
 # ============ EXECUÇÃO ============
 # 📄 lê o arquivo e guarda os 1500 pedidos na lista "registros"
 registros = carregar_dados("halloween_vendas.csv")
@@ -124,3 +149,30 @@ print("Canais corrigidos:", canais_corrigidos)
 print("Canais não reconhecidos:", canais_nao_reconhecidos)
 # mostra como ficou depois da limpeza
 print("Canais depois:", valores_distintos(registros, "canal_venda"))
+
+def validar_numeros(registros):
+    problemas_quantidade = 0
+    problemas_preco = 0
+    pedidos_afetados = 0
+    for registro in registros:
+        # lista de problemas deste pedido (começa vazia)
+        problemas = []
+        ok_q, resultado_q = validar_quantidade(registro["quantidade"])
+        if not ok_q:
+            problemas_quantidade += 1
+            problemas.append("quantidade: " + resultado_q)
+        ok_p, resultado_p = validar_preco(registro["preco_unitario"])
+        if not ok_p:
+            problemas_preco += 1
+            problemas.append("preco_unitario: " + resultado_p)
+        # marca no pedido, sem apagar nem inventar valor
+        registro["problemas"] = problemas
+        # conta o pedido uma única vez, mesmo com dois defeitos
+        if problemas:
+            pedidos_afetados += 1
+    return problemas_quantidade, problemas_preco, pedidos_afetados
+# valida quantidade e preço (só marca os problemas, não altera os valores)
+problemas_quantidade, problemas_preco, pedidos_afetados = validar_numeros(registros)
+print("Problemas em quantidade:", problemas_quantidade)
+print("Problemas em preço:", problemas_preco)
+print("Pedidos afetados:", pedidos_afetados)
