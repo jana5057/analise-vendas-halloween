@@ -202,6 +202,22 @@ def processar_datas(registros):
                 invalidas += 1
     return vazias, invalidas
 
+def investigar_entrega(registros):
+    sem_entrega_cancelado = 0
+    sem_entrega_outro = 0
+    exemplos = []
+    for registro in registros:
+        # só olha os pedidos sem data de entrega
+        if registro["data_entrega"].strip() == "":
+            if registro["status_pedido"].strip() == "Cancelado":
+                sem_entrega_cancelado += 1
+            else:
+                sem_entrega_outro += 1
+                # guarda até 3 exemplos que quebram a regra
+                if len(exemplos) < 3:
+                    exemplos.append(registro)
+    return sem_entrega_cancelado, sem_entrega_outro, exemplos
+
 # valida quantidade e preço (só marca os problemas, não altera os valores)
 problemas_quantidade, problemas_preco, pedidos_afetados = validar_numeros(registros)
 print("Problemas em quantidade:", problemas_quantidade)
@@ -211,3 +227,9 @@ print("Pedidos afetados:", pedidos_afetados)
 datas_vazias, datas_invalidas = processar_datas(registros)
 print("Datas vazias:", datas_vazias)
 print("Datas inválidas:", datas_invalidas)
+# investiga a regra: sem data_entrega => Cancelado?
+sem_entrega_cancelado, sem_entrega_outro, exemplos = investigar_entrega(registros)
+print("Sem entrega e Cancelado:", sem_entrega_cancelado)
+print("Sem entrega e outro status:", sem_entrega_outro)
+for exemplo in exemplos:
+    print("Contraexemplo:", exemplo["pedido_id"], exemplo["status_pedido"])
