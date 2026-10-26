@@ -1,6 +1,7 @@
 # ============ IMPORTS ============
 import csv  # 🔒 biblioteca do Python para ler arquivos .csv
 import re #  🔒 biblioteca do Python para expressões regulares (regex)
+from datetime import datetime  # 🔒 biblioteca do Python para lidar com datas e horas
 
 
 # ============ FUNÇÕES ============
@@ -171,8 +172,42 @@ def validar_numeros(registros):
         if problemas:
             pedidos_afetados += 1
     return problemas_quantidade, problemas_preco, pedidos_afetados
+
+
+def converter_data(texto):
+    # tenta ler o texto seguindo o molde ano-mês-dia hora:minuto:segundo
+    try:
+        data = datetime.strptime(texto.strip(), "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        # vazio ou formato errado: não converte
+        return False, None
+    # strftime escreve a data em outro formato: aqui "2025-09"
+    return True, data.strftime("%Y-%m")
+
+def processar_datas(registros):
+    vazias = 0
+    invalidas = 0
+    for registro in registros:
+        texto = registro["data_venda"]
+        ok, ano_mes = converter_data(texto)
+        if ok:
+            # guarda o ano-mês no pedido para contar depois
+            registro["ano_mes"] = ano_mes
+        else:
+            registro["ano_mes"] = None
+            # separa vazia de inválida
+            if texto.strip() == "":
+                vazias += 1
+            else:
+                invalidas += 1
+    return vazias, invalidas
+
 # valida quantidade e preço (só marca os problemas, não altera os valores)
 problemas_quantidade, problemas_preco, pedidos_afetados = validar_numeros(registros)
 print("Problemas em quantidade:", problemas_quantidade)
 print("Problemas em preço:", problemas_preco)
 print("Pedidos afetados:", pedidos_afetados)
+# converte data_venda e conta datas vazias e inválidas
+datas_vazias, datas_invalidas = processar_datas(registros)
+print("Datas vazias:", datas_vazias)
+print("Datas inválidas:", datas_invalidas)
